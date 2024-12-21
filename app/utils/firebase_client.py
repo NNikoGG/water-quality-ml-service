@@ -51,7 +51,17 @@ def fetch_sensor_data():
         return pd.DataFrame()
     
     df = pd.DataFrame.from_dict(data, orient='index')
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    
+    # Filter out invalid timestamps before conversion
+    df = df[df['timestamp'] != "Failed to obtain time"]
+    
+    # Convert timestamps with error handling
+    df['timestamp'] = pd.to_datetime(df['timestamp'], format='ISO8601', errors='coerce')
+    
+    # Remove any rows where timestamp conversion failed
+    df = df.dropna(subset=['timestamp'])
+    
+    # Sort by timestamp
     df = df.sort_values('timestamp')
     
     return df
